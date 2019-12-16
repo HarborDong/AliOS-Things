@@ -44,13 +44,11 @@ src     = Split('''
        Drivers/BSP/Components/vl53l0x/vl53l0x_api_strings.c 
        Drivers/BSP/Components/vl53l0x/vl53l0x_platform_log.c 
        aos/soc_impl.c                
-       aos/trace_impl.c             
        src/B-L475E-IOT01/runapp/aos.c                    
        src/common/csp/wifi/src/es_wifi_io.c        
        src/common/csp/wifi/src/wifi.c              
        src/B-L475E-IOT01/hal/hw.c                     
        src/B-L475E-IOT01/hal/flash_port.c              
-       src/B-L475E-IOT01/hal/ota_port.c              
        src/B-L475E-IOT01/hal/hal_i2c_stm32l4.c       
        src/B-L475E-IOT01/sensor/vl53l0x_platform.c 
        src/B-L475E-IOT01/sensor/vl53l0x_proximity.c 
@@ -72,18 +70,23 @@ if aos_global_config.ide != 'keil':
     src.append( 'Middlewares/USB_Device/Core/Src/usbd_ctlreq.c' )
     src.append( 'Middlewares/USB_Device/Core/Src/usbd_ioreq.c' )
 
-component = aos_arch_component('stm32l475', src)
+prefix = ''
+if aos_global_config.compiler == "gcc":
+    prefix = 'arm-none-eabi-'
+        
+component = aos_mcu_component('stm32l475', prefix, src)
 if aos_global_config.compiler == 'armcc':
-    component.add_external_obj('src/B-L475E-IOT01/runapp/startup_stm32l475xx_armcc.o')
-    component.add_external_obj('src/B-L475E-IOT01/runapp/stm32l4xx_it.o')
+    component.add_prebuilt_objs('src/B-L475E-IOT01/runapp/startup_stm32l475xx_armcc.o')
+    component.add_prebuilt_objs('src/B-L475E-IOT01/runapp/stm32l4xx_it.o')
 
-component.add_component_dependencis('platform/arch/arm/armv7m')
-component.add_component_dependencis('utility/libc')
-component.add_component_dependencis('kernel/rhino')
-component.add_component_dependencis('kernel/hal')
-component.add_component_dependencis('kernel/modules/fs/kv')
-component.add_component_dependencis('kernel/vfs')
-component.add_component_dependencis('utility/digest_algorithm')
+component.add_comp_deps('platform/arch/arm/armv7m')
+component.add_comp_deps('utility/libc')
+component.add_comp_deps('kernel/rhino')
+component.add_comp_deps('osal')
+component.add_comp_deps('kernel/init')
+component.add_comp_deps('kernel/hal')
+component.add_comp_deps('kernel/fs/kv')
+component.add_comp_deps('kernel/vfs')
 
 component.set_global_arch('Cortex-M4')
 
@@ -103,7 +106,7 @@ include_tmp = Split('''
        Drivers/BSP/Components/lsm6dsl 
        Drivers/BSP/Components/vl53l0x 
        Drivers/CMSIS/Include 
-       ../../../include/hal 
+       ../../../kernel/hal/include 
        Middlewares/USB_Device/Core/Inc
 ''')
 
@@ -111,17 +114,12 @@ for i in include_tmp:
     component.add_global_includes(i)
     
 macro_tmp = Split('''
-   CONFIG_AOS_KV_MULTIPTN_MODE
-   CONFIG_AOS_KV_PTN=6
-   CONFIG_AOS_KV_SECOND_PTN=7
-   CONFIG_AOS_KV_PTN_SIZE=4096
-   CONFIG_AOS_KV_BUFFER_SIZE=8192
    STM32L475xx
    RHINO_CONFIG_WORKQUEUE=1
 ''') 
 
 for i in macro_tmp:
-    component.add_global_macro(i)
+    component.add_global_macros(i)
 
 if aos_global_config.compiler == 'armcc':
     cflags_tmp = Split('''
@@ -141,7 +139,6 @@ elif aos_global_config.compiler == 'iar':
 else:    
     cflags_tmp = Split('''
         -mcpu=cortex-m4
-        -march=armv7-m  
         -mlittle-endian 
         -mthumb
         -mthumb-interwork
@@ -167,7 +164,6 @@ elif aos_global_config.compiler == 'iar':
 else:
     asflags_tmp = Split('''
         -mcpu=cortex-m4 
-        -march=armv7-m   
         -mlittle-endian 
         -mthumb 
         -mthumb-interwork 
@@ -201,20 +197,10 @@ else:
         -nostartfiles    
         --specs=nosys.specs 
     ''') 
-    CLIB_LDFLAGS_NANO_FLOAT = aos_global_config.get_aos_global_config('CLIB_LDFLAGS_NANO_FLOAT')
+    CLIB_LDFLAGS_NANO_FLOAT = aos_global_config.get('CLIB_LDFLAGS_NANO_FLOAT')
     ldflags_tmp.append( CLIB_LDFLAGS_NANO_FLOAT )
     ldflags_tmp.append('-T')
     ldflags_tmp.append('platform/mcu/stm32l475/STM32L475VGTx_FLASH.ld')
 
 for i in ldflags_tmp:
     component.add_global_ldflags(i)
-
-tool_chain = aos_global_config.create_tool_chain()
-if aos_global_config.compiler == 'armcc':
-    pass
-elif aos_global_config.compiler == 'iar':
-    pass
-else:
-    tool_chain.set_prefix('arm-none-eabi-')
-
-aos_global_config.tool_chain_config(tool_chain)

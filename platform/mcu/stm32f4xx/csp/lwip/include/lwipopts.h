@@ -197,7 +197,7 @@
 
 #define ETHIF_IN_TASK_STACKSIZE         512 /* unit 4 byte */
 #define ETHIF_IN_TASK_PRIO              10
-#define TCPIP_THREAD_STACKSIZE          1024/* unit 4 byte */
+#define TCPIP_THREAD_STACKSIZE          3072/* unit 4 byte */
 #define TCPIP_THREAD_PRIO               5
 
 /*
@@ -272,6 +272,9 @@
 #define TCP_RST_DEBUG                   LWIP_DBG_OFF
 #define DHCP_DEBUG                      LWIP_DBG_OFF
 #define ETHARP_DEBUG                    LWIP_DBG_OFF
+#define PKTPRINT_DEBUG                  LWIP_DBG_OFF
+#define IPERF_DEBUG                     LWIP_DBG_OFF
+#define PING_DEBUG                      LWIP_DBG_OFF
 
 /*
    ---------- Performance tracking options ----------

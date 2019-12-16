@@ -17,7 +17,7 @@
 #define USE_RTL_ROM_CLIB	0
 #else
 #define BUFFERED_PRINTF         0
-#define USE_RTL_ROM_CLIB	0
+#define USE_RTL_ROM_CLIB	1
 #endif
 
 #if defined(CONFIG_PLATFORM_8195A)
@@ -199,7 +199,7 @@ extern void vPortFree( void *pv );
         extern int buffered_printf(const char* fmt, ...);
         #define printf				buffered_printf
 #else
-	#define printf				rtl_printf
+	#define printf				DiagPrintf
 #endif
 	#define sprintf				rtl_sprintf
 	#define snprintf				rtl_snprintf

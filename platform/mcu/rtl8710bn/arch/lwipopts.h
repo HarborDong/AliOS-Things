@@ -56,7 +56,7 @@
 #define LWIP_NOASSERT			1
 
 #define LWIP_DEBUG                      0
-#define LWIP_DEBUG_TRACE                0
+//#define LWIP_DEBUG_TRACE              1
 #define SOCKETS_DEBUG                   LWIP_DBG_OFF // | LWIP_DBG_MASK_LEVEL
 
 #define IP_DEBUG                        LWIP_DBG_OFF
@@ -91,6 +91,12 @@
 #define SNMP_MSG_DEBUG                  LWIP_DBG_OFF
 #define SNMP_MIB_DEBUG                  LWIP_DBG_OFF
 #define DNS_DEBUG                       LWIP_DBG_OFF
+#define PKTPRINT_DEBUG                  LWIP_DBG_OFF
+#define IPERF_DEBUG                     LWIP_DBG_OFF
+#define PING_DEBUG                      LWIP_DBG_OFF
+#define PKTPRINT_DEBUG                  LWIP_DBG_OFF
+#define IPERF_DEBUG                     LWIP_DBG_OFF
+#define PING_DEBUG                      LWIP_DBG_OFF
 //#define LWIP_COMPAT_MUTEX      		1
 /**
  * SYS_LIGHTWEIGHT_PROT==1: if you want inter-task protection for certain
@@ -138,7 +144,7 @@
  * a lot of data that needs to be copied, this should be set high.
  */
 
-#define MEM_SIZE (32*1024)
+#define MEM_SIZE (20*1024)
 
 
 
@@ -208,7 +214,7 @@
  * PBUF_POOL_SIZE: the number of buffers in the pbuf pool.
  */
 
-#define PBUF_POOL_SIZE                  10
+//#define PBUF_POOL_SIZE                  30
 
 
 /*
@@ -222,7 +228,7 @@
  * designed to accomodate single full size TCP frame in one pbuf, including
  * TCP_MSS, IP header, and link header.
  */
-#define PBUF_POOL_BUFSIZE               1580
+#define PBUF_POOL_BUFSIZE               500
 
 
 /*
@@ -268,6 +274,11 @@
  * Enable TCP_KEEPALIVE
  */
 #define LWIP_TCP_KEEPALIVE              1
+
+/**
+ * TCP_SYNMAXRTX: Maximum number of retransmissions of SYN segments.
+ */
+#define TCP_SYNMAXRTX                   10
 
 /*
    ----------------------------------------
@@ -406,14 +417,14 @@ The STM32F107 allows computing and verifying the IP, UDP, TCP and ICMP checksums
 //yhb changed:
 //#ifdef CONFIG_ENABLE_MXCHIP
 /* save memory */
-#define PBUF_POOL_SIZE                  10
+#define PBUF_POOL_SIZE                  30
 #define TCP_MSS                 (1500 - 40)
 /* TCP receive window. */
 #define TCP_WND                 (3*TCP_MSS)
 /* TCP sender buffer space (bytes). */
 #define TCP_SND_BUF             (10*TCP_MSS)
 
-#define TCP_SND_QUEUELEN        (20)
+#define TCP_SND_QUEUELEN        (4* TCP_SND_BUF/TCP_MSS)
 
 /* ARP before DHCP causes multi-second delay  - turn it off */
 #define DHCP_DOES_ARP_CHECK            (0)
@@ -441,7 +452,7 @@ The STM32F107 allows computing and verifying the IP, UDP, TCP and ICMP checksums
 #define TCPIP_MBOX_SIZE                 16
 #define DEFAULT_ACCEPTMBOX_SIZE         8
 #define DEFAULT_RAW_RECVMBOX_SIZE       4
-#define DEFAULT_UDP_RECVMBOX_SIZE       8
+#define DEFAULT_UDP_RECVMBOX_SIZE       20 // 8
 #define DEFAULT_TCP_RECVMBOX_SIZE       8
 
 #ifdef CONFIG_AOS_MESH

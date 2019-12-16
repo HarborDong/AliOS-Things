@@ -17,23 +17,31 @@ MEMORY
 	ROM (rx) : 			ORIGIN = 0x00000000, LENGTH = 0x80000	/* ROM: 512k */
 	ROMBSS_RAM (rw)  : 		ORIGIN = 0x10000000, LENGTH = 0x2000	/* ROM BSS RAM: 8K */
 	BOOTLOADER_RAM (rwx)  : 	ORIGIN = 0x10002000, LENGTH = 0x3000	/* BOOT Loader RAM: 12K */
-	BD_RAM (rwx)  : 		ORIGIN = 0x10005000, LENGTH = 0x39000	/* MAIN RAM: 228 */
+	BD_RAM (rwx)  : 		ORIGIN = 0x10005000, LENGTH = 0x38000	/* MAIN RAM: 228 */
+	ROM_BSS_RAM (rwx)  : 		ORIGIN = 0x1003D000, LENGTH = 0x1000	/* ROM BSS RAM: 4K */
 	MSP_RAM (wx)  : 		ORIGIN = 0x1003E000, LENGTH = 0x1000	/* MSP RAM: 4k */
 	RDP_RAM (wx)  : 		ORIGIN = 0x1003F000, LENGTH = 0xFF0	/* RDP RAM: 4k-0x10 */
 
 	XIPBOOT (rx)  :			ORIGIN = 0x08000000+0x20, LENGTH = 0x04000-0x20	/* XIPBOOT: 32k, 32 Bytes resvd for header*/
 	XIPSYS (r) :			ORIGIN = 0x08009000, LENGTH = 0x1000	/* XIPSYS: 4K system data in flash */
 	XIPCAL (r) :			ORIGIN = 0x0800A000, LENGTH = 0x1000	/* XIPCAL: 4K calibration data in flash */
-	XIP1 (rx)  : 			ORIGIN = 0x0800B000+0x20, LENGTH = 0xF2000-0x20	/* XIP1: 968k, 32 Bytes resvd for header */
-	XIP2 (rx)  : 			ORIGIN = 0x08100000+0x20, LENGTH = 0xF2000-0x20	/* XIP2: 968k, 32 Bytes resvd for header */
+	XIP1 (rx)  : 			ORIGIN = 0x08019000+0x20, LENGTH = 0xE2000-0x20	/* XIP1: 904k, 32 Bytes resvd for header */
 }
 
-
+PROVIDE(app_download_addr = 0xffffffff);
+PROVIDE(kernel_download_addr = 0x8100000);
 
 SECTIONS
 {
 	.rom.text : { } > ROM
 	.rom.rodata : { } > ROM
+	.ARM.exidx :
+	{
+		__exidx_start = .;
+	    *(.ARM.exidx*)
+	    *(.gnu.linkonce.armexidx.*)
+		__exidx_end = .;
+	} > ROM
 	.hal.rom.bss : { } > ROMBSS_RAM
 
 	/* image1 entry, this section should in RAM and fixed address for ROM */
@@ -112,18 +120,22 @@ SECTIONS
 		*(.bdsram.data*)
 		__bss_end__ = .;
 	} > BD_RAM
-  end =.;
+
 	.ram_heap.data : 
 	{
 		*(.bfsram.data*)
-		*(.heap.stdlib*)
-	
 	} > BD_RAM
 
 	. = ALIGN(8);
 	PROVIDE(heap_start    	  = .);
-	PROVIDE(heap_end    	  = 0x1003DFFF);
+	PROVIDE(heap_end    	  = 0x1003CFFF);
 	PROVIDE(heap_len    	  = heap_end - heap_start);
+	
+	.rom.bss : 
+	{
+		*(.heap.stdlib*)
+	} > ROM_BSS_RAM	
+	
 	.ram_rdp.text : 
 	{
 		__rom_top_4k_start_ = .;

@@ -2,7 +2,7 @@
  * Copyright (C) 2015-2017 Alibaba Group Holding Limited
  */
 
-#include <hal/soc/soc.h>
+
 #include <k_api.h>
 #include "platform_peripheral.h"
 #include "RingBufferUtils.h"
@@ -53,7 +53,7 @@ int32_t hal_uart_finalize(uart_dev_t *uart)
 
 int32_t hal_uart_send(uart_dev_t *uart, const void *data, uint32_t size, uint32_t timeout)
 {
-    if (uart->port > MICO_UART_MAX)
+    if (uart->port >= MICO_UART_MAX)
         return -1;
 
     platform_uart_transmit_bytes(&platform_uart_drivers[uart->port], data, size);
@@ -65,9 +65,12 @@ int32_t hal_uart_recv_II(uart_dev_t *uart, void *data, uint32_t expect_size, uin
     if (uart->port > MICO_UART_MAX)
         return -1;
 
-    platform_uart_receive_bytes(&platform_uart_drivers[uart->port], data, expect_size, timeout);
+    int ret = platform_uart_receive_bytes(&platform_uart_drivers[uart->port], data, expect_size, timeout);
+    if(ret != 0) {
+        ret = -1;
+    }
     *recv_size = expect_size;
-    return 0;
+    return ret;
 }
 
 

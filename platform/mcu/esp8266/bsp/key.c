@@ -2,7 +2,8 @@
 #include "espressif/esp_common.h"
 #include "gpio.h"
 #include <stdio.h>
-#include <aos/aos.h>
+#include "aos/kernel.h"
+#include "aos/yloop.h"
 
 #define KEY_GPIO_PIN GPIO_Pin_14
 #define KEY_GPIO_MODE GPIO_Mode_Input
@@ -57,7 +58,8 @@ static void handle_elink_key()
 
     if ((level == 0) && (elink_time == 0)) {
         elink_time = aos_now_ms();
-        aos_loop_schedule_work(0, key_proc_work, NULL, NULL, NULL);
+        aos_schedule_call(key_poll_func, NULL);
+       // aos_loop_schedule_work(0, key_proc_work, NULL, NULL, NULL);
     }
 }
 
